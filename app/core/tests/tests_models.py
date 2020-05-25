@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 
 class ModelTests(TestCase):
-    def test_creat_with_email_successful(self):
+    def test_create_user_success(self):
         email = 'test@test.com'
         password = 'password'
 
@@ -15,6 +15,22 @@ class ModelTests(TestCase):
 
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(password))
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+    def test_create_superuser_success(self):
+        email = 'superuser@test.com'
+        password = 'password'
+
+        user = get_user_model().objects.create_superuser(
+            email=email,
+            password=password
+        )
+
+        self.assertEqual(user.email, email)
+        self.assertTrue(user.check_password(password))
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
 
     def test_email_normalization(self):
         email = 'test@TEST.com'
