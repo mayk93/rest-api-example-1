@@ -21,6 +21,12 @@ class UserAdmin(BaseUserAdmin):
         ),
         ('Important dates', {'fields': ('last_login',)}),
     )
+    add_fieldsets = (
+        ('Basic Info', {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2')
+        }),
+    )
 
 
 admin.site.register(models.User, UserAdmin)
