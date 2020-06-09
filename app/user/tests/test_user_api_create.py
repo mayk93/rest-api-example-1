@@ -1,24 +1,12 @@
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from rest_framework.test import APIClient
 from rest_framework import status
 
+from user.tests.user_api_utils import create_user, get_user, get_user_exists
+
 CREATE_USER_URL = reverse('user:create')
-
-
-def create_user(**params):
-    return get_user_model().objects.create_user(**params)
-
-
-def get_user(**params):
-    return get_user_model().objects.get(**params)
-
-
-def get_user_exists(email):
-    return get_user_model().objects.filter(email=email).exists()
-
 
 payload = {
     'email': 'test@test.com',
