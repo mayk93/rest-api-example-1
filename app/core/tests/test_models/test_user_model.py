@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from core.tests.user_test_utils import create_user
 
 
 class ModelTests(TestCase):
@@ -8,10 +9,10 @@ class ModelTests(TestCase):
         email = 'test@test.com'
         password = 'password'
 
-        user = get_user_model().objects.create_user(
-            email=email,
-            password=password
-        )
+        user = create_user(**{
+            'email': email,
+            'password': password
+        })
 
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(password))
@@ -35,19 +36,19 @@ class ModelTests(TestCase):
     def test_email_normalization(self):
         email = 'test@TEST.com'
 
-        user = get_user_model().objects.create_user(email=email)
+        user = create_user(**{'email': email})
 
         self.assertEqual(user.email, email.lower())
 
     def test_email_validation_success(self):
         email = 'test@test.com'
-        user = get_user_model().objects.create_user(email=email)
+        user = create_user(**{'email': email})
         self.assertEqual(user.email, email)
 
     def test_email_validation_fail(self):
         email = ''
         self.assertRaises(
             ValidationError,
-            get_user_model().objects.create_user,
-            email
+            create_user,
+            **{'email': email}
         )

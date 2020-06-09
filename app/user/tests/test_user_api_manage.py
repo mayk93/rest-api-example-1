@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from user.tests.user_api_utils import create_user
+from core.tests.user_test_utils import create_user
 
 MANAGE_URL = reverse('user:manage')
 
