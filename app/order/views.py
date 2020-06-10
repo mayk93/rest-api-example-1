@@ -3,39 +3,28 @@ from order.serializers import TagSerializer, ItemSerializer
 from core.models import Tag, Item
 
 
-class TagViewSet(
+class BaseViewLogic(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin
 ):
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Tag.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+    def perform_create(self, serializer):
+        serializer.save(
+            user=self.request.user
+        )
+
+
+class TagViewSet(BaseViewLogic):
     serializer_class = TagSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user).order_by('-name')
-
-    def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user
-        )
+    queryset = Tag.objects.all()
 
 
-class ItemViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin
-):
-    authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes = (permissions.IsAuthenticated,)
-    queryset = Item.objects.all()
+class ItemViewSet(BaseViewLogic):
     serializer_class = ItemSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user).order_by('-name')
-
-    def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user
-        )
+    queryset = Item.objects.all()
