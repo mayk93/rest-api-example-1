@@ -26,7 +26,6 @@ class PrivateUserAPITest(TestCase):
             'password': 'password'
         }
         self.user = create_user(**self.user_data)
-
         self.client.force_authenticate(user=self.user)
 
     def test_get_profile_success(self):
@@ -37,7 +36,7 @@ class PrivateUserAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_response)
 
-    def test_path_profile_success(self):
+    def test_patch_profile_success(self):
         patch_payload = {
             'name': 'New name',
             'email': 'new@test.com',

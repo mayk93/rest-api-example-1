@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from core.models.tag_model import Tag
+from core.models import Tag
 from order.serializers import TagSerializer
 from core.tests.user_test_utils import create_user
 
@@ -29,7 +29,6 @@ class PrivateTagAPITest(TestCase):
             'password': 'password'
         }
         self.user = create_user(**self.user_data)
-
         self.client.force_authenticate(user=self.user)
 
     def test_get_tags_success(self):
@@ -49,7 +48,7 @@ class PrivateTagAPITest(TestCase):
         other_user_data['email'] = 'other@test.com'
         other_user = create_user(**other_user_data)
 
-        first_user_tag = Tag.objects.create(
+        tag = Tag.objects.create(
             user=self.user,
             name='First User Tag'
         )
@@ -59,7 +58,7 @@ class PrivateTagAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], first_user_tag.name)
+        self.assertEqual(response.data[0]['name'], tag.name)
 
     def test_post_tag_success(self):
         payload = {'name': 'Priority'}
