@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins, authentication, permissions
 from order.serializers import TagSerializer
-from core.models import Tag
+from core.models.tag_model import Tag
 
 
 class TagViewSet(

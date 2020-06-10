@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from core.models import Tag
+from core.models.tag_model import Tag
 from order.serializers import TagSerializer
 from core.tests.user_test_utils import create_user
 
