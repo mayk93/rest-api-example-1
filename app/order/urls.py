@@ -5,8 +5,10 @@ from order import views
 app_name = 'order'
 
 router = DefaultRouter()
-router.register('tags', views.TagViewSet)
+
+router.register('order', views.OrderViewSet)
 router.register('items', views.ItemViewSet)
+router.register('tags', views.TagViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
