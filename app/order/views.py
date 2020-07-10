@@ -1,5 +1,6 @@
 from rest_framework import viewsets, mixins, authentication, permissions
-from order.serializers import TagSerializer, ItemSerializer, OrderSerializer
+from order.serializers import \
+    TagSerializer, ItemSerializer, OrderSerializer, OrderDetailSerializer
 from core.models import Order, Item, Tag
 
 DEFAULT_INHERITANCE_LIST = (
@@ -34,7 +35,7 @@ BaseViewLogic = base_view_logic_builder(
     order_by='name'
 )
 BaseModelViewSet = base_view_logic_builder(
-    inheritence_list=(viewsets.ModelViewSet,)
+    inheritance_list=(viewsets.ModelViewSet,)
 )
 
 
@@ -51,3 +52,8 @@ class ItemViewSet(BaseViewLogic):
 class OrderViewSet(BaseModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return OrderDetailSerializer
+        return OrderSerializer

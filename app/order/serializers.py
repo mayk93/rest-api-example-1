@@ -38,3 +38,14 @@ class OrderSerializer(serializers.ModelSerializer):
             'link'
         )
         read_only_fields = ('id',)
+
+
+class OrderDetailSerializer(OrderSerializer):
+    items = ItemSerializer(
+        many=True,
+        read_only=True
+    )
+    tags = TagSerializer(
+        many=True,
+        read_only=True
+    )
