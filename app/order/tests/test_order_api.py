@@ -137,3 +137,18 @@ class PrivateOrderAPITest(TestCase):
 
         response = self.client.post(ORDER_URL, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_order_success(self):
+        patch_payload = {
+            'notes': 'Update Order',
+        }
+
+        order = sample_order(self.user)
+
+        self.assertNotEqual(order.notes, patch_payload['notes'])
+
+        response = self.client.patch(order_detail_url(order.id), patch_payload)
+        order.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(order.notes, patch_payload['notes'])
