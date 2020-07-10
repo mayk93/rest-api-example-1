@@ -74,3 +74,66 @@ class PrivateOrderAPITest(TestCase):
         serializer = OrderDetailSerializer(order)
 
         self.assertEqual(serializer.data, response.data)
+
+    def test_post_order_basic_success(self):
+        payload = {
+            'notes': 'New Order',
+            'delivery_time': 5,
+            'price': 10.0,
+            'link': 'link'
+        }
+        self.order_post_test(payload)
+
+    def test_post_order_extra_success(self):
+        item = sample_item(user=self.user)
+        tag = sample_tag(user=self.user)
+        payload = {
+            'notes': 'New Order',
+            'delivery_time': 5,
+            'price': 10.0,
+            'link': 'link',
+            'items': [item.id],
+            'tags': [tag.id]
+        }
+
+        self.order_post_test(payload)
+
+    def order_post_test(self, payload):
+        initial_exists = Order.objects.filter(
+            user=self.user,
+        ).exists()
+
+        response = self.client.post(ORDER_URL, payload)
+
+        exists = Order.objects.filter(
+            user=self.user,
+        ).exists()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(initial_exists)
+        self.assertTrue(exists)
+
+        order = Order.objects.get(id=response.data['id'])
+
+        for key in payload.keys():
+            if key not in ['items', 'tags']:
+                self.assertEqual(payload[key], getattr(order, key))
+            else:
+                items = order.items.all()
+                tags = order.tags.all()
+
+                if payload['items']:
+                    self.assertEqual(payload['items'], [i.id for i in items])
+                if payload['tags']:
+                    self.assertEqual(payload['tags'], [t.id for t in tags])
+
+    def test_post_order_fail(self):
+        payload = {
+            'notes': 'New Order',
+            'delivery_time': 8,
+            'price': 10.0,
+            'link': 'link'
+        }
+
+        response = self.client.post(ORDER_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
