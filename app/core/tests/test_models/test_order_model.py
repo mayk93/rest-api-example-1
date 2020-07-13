@@ -1,7 +1,10 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from core import models
 from core.tests.user_test_utils import sample_user
+from unittest.mock import patch
+import random
 
 
 class ModelTests(TestCase):
@@ -82,3 +85,15 @@ class ModelTests(TestCase):
             ValidationError,
             order.full_clean,
         )
+
+    @patch('uuid.uuid4')
+    def test_order_image_file_name(self, mock_uuid):
+        uuid = 'test'
+        mock_uuid.return_value = uuid
+        extension = random.choice(['jpg', 'png', 'svg'])
+
+        file_path = models.order_image_file_name(None, f'image.{extension}')
+        expected_path = f'{settings.BASE_UPLOAD_PATH}/{uuid}.{extension}'
+
+        self.assertEqual(file_path, expected_path)
+

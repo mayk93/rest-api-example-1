@@ -1,6 +1,14 @@
+import os
+import uuid
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+
+
+def order_image_file_name(_, filename):
+    extension = filename.split('.')[-1]
+    new_name = f'{uuid.uuid4()}.{extension}'
+    return os.path.join(settings.BASE_UPLOAD_PATH, new_name)
 
 
 def validate_regular_increment(value, increment=5):
@@ -24,6 +32,8 @@ class Order(models.Model):
 
     items = models.ManyToManyField('Item')
     tags = models.ManyToManyField('Tag')
+
+    image = models.ImageField(null=True, upload_to=order_image_file_name)
 
     def __str__(self):
         return f'Order ID: {self.id}'
