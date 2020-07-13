@@ -96,4 +96,3 @@ class ModelTests(TestCase):
         expected_path = f'{settings.BASE_UPLOAD_PATH}/{uuid}.{extension}'
 
         self.assertEqual(file_path, expected_path)
-

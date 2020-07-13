@@ -1,6 +1,11 @@
-from rest_framework import viewsets, mixins, authentication, permissions
+from rest_framework import \
+    viewsets, mixins, status, authentication, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from order.serializers import \
-    TagSerializer, ItemSerializer, OrderSerializer, OrderDetailSerializer
+    TagSerializer, ItemSerializer,\
+    OrderSerializer, OrderDetailSerializer, OrderImageSerializer
 from core.models import Order, Item, Tag
 
 DEFAULT_INHERITANCE_LIST = (
@@ -56,4 +61,25 @@ class OrderViewSet(BaseModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return OrderDetailSerializer
+        elif self.action == 'upload_image':
+            return OrderImageSerializer
         return OrderSerializer
+
+    @action(methods=['POST'], detail=True, url_path='upload-image')
+    def upload_image(self, request, pk=None):
+        order = self.get_object()
+        serializer = self.get_serializer(
+            order,
+            data=request.data
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )

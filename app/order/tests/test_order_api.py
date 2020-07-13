@@ -1,3 +1,7 @@
+import os
+import tempfile
+from PIL import Image
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -16,6 +20,10 @@ ORDER_URL = reverse(ORDER_URL_BASE)
 
 def order_detail_url(order_id):
     return reverse('order:order-detail', args=[order_id])
+
+
+def order_image_url(order_id):
+    return reverse('order:order-upload-image', args=[order_id])
 
 
 class PublicOrderAPITest(TestCase):
@@ -152,3 +160,45 @@ class PrivateOrderAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(order.notes, patch_payload['notes'])
+
+
+class OrderImageAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = sample_user()
+        self.client.force_authenticate(user=self.user)
+
+        self.order = sample_order(self.user)
+        self.order_image_url = order_image_url(self.order.id)
+
+    def tearDown(self):
+        self.order.image.delete()
+
+    def test_image_success(self):
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            test_image = Image.new('RGB', (10, 10))
+            test_image.save(ntf, format='JPEG')
+            ntf.seek(0)
+
+            payload = {'image': ntf}
+
+            response = self.client.post(
+                self.order_image_url,
+                payload,
+                format='multipart'
+            )
+
+            self.order.refresh_from_db()
+
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertIn('image', response.data)
+            self.assertTrue(os.path.exists(self.order.image.path))
+
+    def test_image_fail(self):
+        payload = {'image': None}
+        response = self.client.post(
+            self.order_image_url,
+            payload,
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

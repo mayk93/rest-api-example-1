@@ -49,3 +49,13 @@ class OrderDetailSerializer(OrderSerializer):
         many=True,
         read_only=True
     )
+
+
+class OrderImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = (
+            'id',
+            'image'
+        )
+        read_only_fields = ('id',)
