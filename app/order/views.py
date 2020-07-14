@@ -28,6 +28,9 @@ def base_view_logic_builder(
 
             tags_qs = self.request.query_params.get('tags')
             items_qs = self.request.query_params.get('items', '')
+            assigned = bool(int(
+                self.request.query_params.get('assigned', '0')
+            ))
 
             if tags_qs:
                 tags = [int(_) for _ in tags_qs.split(',')]
@@ -35,10 +38,13 @@ def base_view_logic_builder(
             if items_qs:
                 items = [int(_) for _ in items_qs.split(',')]
                 queryset = queryset.filter(items__id__in=items)
+            if assigned:
+                queryset = queryset.filter(order__isnull=False)
 
             return queryset \
                 .filter(user=self.request.user) \
-                .order_by(f'-{kwargs.get("order_by", "id")}')
+                .order_by(f'-{kwargs.get("order_by", "id")}') \
+                .distinct()
 
         def perform_create(self, serializer):
             serializer.save(

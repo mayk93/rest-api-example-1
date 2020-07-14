@@ -7,6 +7,7 @@ from rest_framework import status
 from core.models import Item
 from order.serializers import ItemSerializer
 from core.tests.user_test_utils import create_user
+from core.tests.order_test_utils import sample_order, sample_item
 
 ITEMS_URL = reverse('order:item-list')
 
@@ -80,5 +81,51 @@ class PrivateItemAPITest(TestCase):
             name=None
         ).exists()
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST
+        )
         self.assertFalse(exists)
+
+    def test_filter_items_by_assignment(self):
+        order = sample_order(user=self.user)
+
+        item_1 = sample_item(user=self.user, name='Item 1')
+        item_2 = sample_item(user=self.user, name='Item 2')
+
+        order.items.add(item_1)
+
+        response_1 = self.client.get(ITEMS_URL, {'assigned': 1})
+        response_2 = self.client.get(ITEMS_URL)
+
+        self.assertEqual(response_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(len(response_1.data), 1)
+        self.assertEqual(len(response_2.data), 2)
+
+        self.assertEqual(response_1.data[0]['name'], item_1.name)
+
+        item_1_name_match = \
+            response_2.data[0]['name'] == item_1.name or \
+            response_2.data[1]['name'] == item_1.name
+        item_2_name_match = \
+            response_2.data[0]['name'] == item_2.name or \
+            response_2.data[1]['name'] == item_2.name
+
+        self.assertTrue(item_1_name_match)
+        self.assertTrue(item_2_name_match)
+
+    def test_filter_items_by_assignment_unique(self):
+        order_1 = sample_order(user=self.user)
+        order_2 = sample_order(user=self.user)
+
+        item = sample_item(user=self.user, name='Item 1')
+        sample_item(user=self.user, name='Item 2')
+
+        order_1.items.add(item)
+        order_2.items.add(item)
+
+        response = self.client.get(ITEMS_URL, {'assigned': 1})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
