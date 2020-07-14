@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from order.serializers import \
-    TagSerializer, ItemSerializer,\
+    TagSerializer, ItemSerializer, \
     OrderSerializer, OrderDetailSerializer, OrderImageSerializer
 from core.models import Order, Item, Tag
 
@@ -24,7 +24,19 @@ def base_view_logic_builder(
         permission_classes = (permissions.IsAuthenticated,)
 
         def get_queryset(self):
-            return self.queryset \
+            queryset = self.queryset
+
+            tags_qs = self.request.query_params.get('tags')
+            items_qs = self.request.query_params.get('items', '')
+
+            if tags_qs:
+                tags = [int(_) for _ in tags_qs.split(',')]
+                queryset = queryset.filter(tags__id__in=tags)
+            if items_qs:
+                items = [int(_) for _ in items_qs.split(',')]
+                queryset = queryset.filter(items__id__in=items)
+
+            return queryset \
                 .filter(user=self.request.user) \
                 .order_by(f'-{kwargs.get("order_by", "id")}')
 

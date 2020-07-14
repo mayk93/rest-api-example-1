@@ -161,6 +161,62 @@ class PrivateOrderAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(order.notes, patch_payload['notes'])
 
+    def test_filter_order_by_tags(self):
+        order_1 = sample_order(self.user)
+        order_2 = sample_order(self.user)
+
+        tag_1 = sample_tag(user=self.user)
+        tag_2 = sample_tag(user=self.user)
+
+        order_1.tags.add(tag_1)
+        order_2.tags.add(tag_2)
+
+        response_1 = self.client.get(ORDER_URL, {'tags': tag_1.id})
+        response_2 = self.client.get(ORDER_URL, {'tags': tag_2.id})
+
+        order_1_serializer = OrderSerializer(order_1)
+        order_2_serializer = OrderSerializer(order_2)
+
+        self.assertEqual(response_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_1.data), 1)
+        self.assertEqual(
+            response_1.data[0]['tags'], order_1_serializer.data['tags']
+        )
+
+        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_2.data), 1)
+        self.assertEqual(
+            response_2.data[0]['tags'], order_2_serializer.data['tags']
+        )
+
+    def test_filter_order_by_items(self):
+        order_1 = sample_order(self.user)
+        order_2 = sample_order(self.user)
+
+        item_1 = sample_item(user=self.user)
+        item_2 = sample_item(user=self.user)
+
+        order_1.items.add(item_1)
+        order_2.items.add(item_2)
+
+        response_1 = self.client.get(ORDER_URL, {'items': item_1.id})
+        response_2 = self.client.get(ORDER_URL, {'items': item_2.id})
+
+        order_1_serializer = OrderSerializer(order_1)
+        order_2_serializer = OrderSerializer(order_2)
+
+        self.assertEqual(response_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_1.data), 1)
+        self.assertEqual(
+            response_1.data[0]['items'], order_1_serializer.data['items']
+        )
+
+        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_2.data), 1)
+        self.assertEqual(
+            response_2.data[0]['items'], order_2_serializer.data['items']
+        )
+
 
 class OrderImageAPITest(TestCase):
     def setUp(self):
